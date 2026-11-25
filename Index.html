@@ -57,8 +57,8 @@
                             <span id="school-db-badge" class="text-[10px] sm:text-[11px] font-medium px-2 py-0.5 rounded-full bg-purple-950/70 border border-purple-400/30 text-purple-200">
                                 ฐานข้อมูล: 0 คน
                             </span>
-                            <button type="button" onclick="openMultiDeviceModal()" id="cloud-sync-badge" class="text-[10px] sm:text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-purple-950/70 hover:bg-purple-900 border border-purple-400/40 text-purple-200 transition cursor-pointer">
-                                🌐 กำลังเชื่อมต่อ...
+                            <button type="button" onclick="openSheetsModal()" id="sheets-header-badge" class="text-[10px] sm:text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-purple-950/70 hover:bg-purple-900 border border-purple-400/40 text-purple-200 transition cursor-pointer">
+                                📊 Google Sheets: ยังไม่เชื่อม
                             </button>
                         </div>
                         <p class="text-[11px] sm:text-xs text-purple-200 mt-0.5 truncate">กีฬา • เชียร์ • ผู้นำเชียร์ • สวัสดิการ • พาเหรด</p>
@@ -383,25 +383,34 @@
 
         <!-- ==================== TAB 4: จัดการข้อมูล & นำเข้า/ส่งออก (DATA) ==================== -->
         <section id="tab-data" class="hidden space-y-4">
-            <!-- 0. สถานะการจัดเก็บข้อมูล & วิธีเอาขึ้น GitHub -->
-            <div class="bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white rounded-3xl p-5 shadow-md border border-purple-500/30">
+            <!-- 0. เชื่อมต่อ Google Sheets & ห้องข้อมูล -->
+            <div class="bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white rounded-3xl p-5 shadow-md border border-purple-500/30 space-y-3">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div class="space-y-1">
                         <div class="flex items-center gap-2 flex-wrap">
-                            <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-400/20 text-emerald-200 border border-emerald-300/30" id="data-sync-status-pill">
-                                💾 บันทึกในเครื่องอัตโนมัติ
+                            <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-400/20 text-emerald-200 border border-emerald-300/30" id="data-sheets-status-pill">
+                                📊 Google Sheets: ยังไม่ได้ตั้งค่า URL
                             </span>
                             <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-white/15 text-purple-100">
                                 ห้องข้อมูล: <span id="data-room-code-label">PURPLE-MAIN</span>
                             </span>
                         </div>
-                        <h3 class="font-bold text-base sm:text-lg pt-1">🚀 พร้อมอัปโหลดขึ้น GitHub Pages (`index.html`)</h3>
+                        <h3 class="font-bold text-base sm:text-lg pt-1">☁️ เชื่อมต่อข้อมูลเข้า Google Sheets</h3>
                         <p class="text-xs text-purple-200">
-                            ข้อมูลจะถูกบันทึกในเบราว์เซอร์ของเครื่องอัตโนมัติ และสามารถใช้ไฟล์สำรอง (.json) ส่งต่อหรือรวมยอดระหว่างประธานกีฬาได้
+                            ซิงก์รายชื่อ หมายเหตุ และการเช็กชื่อเข้า Google Sheets ให้อัตโนมัติ หรือดึงข้อมูลล่าสุดจาก Google Sheets ลงเครื่องได้ทันที
                         </p>
                     </div>
-                    <button type="button" onclick="openMultiDeviceModal()" class="px-4 py-2.5 rounded-2xl bg-white text-purple-950 hover:bg-purple-50 font-bold text-xs shadow transition shrink-0">
-                        🔗 ห้องข้อมูล / วิธีลง GitHub
+                    <button type="button" onclick="openSheetsModal()" class="px-4 py-2.5 rounded-2xl bg-white text-purple-950 hover:bg-purple-50 font-bold text-xs shadow transition shrink-0">
+                        ⚙️ ตั้งค่า Google Sheets
+                    </button>
+                </div>
+
+                <div class="flex flex-wrap gap-2 pt-1">
+                    <button type="button" onclick="syncToGoogleSheets(false)" id="btn-sync-to-sheets" class="flex-1 py-2.5 px-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow transition flex items-center justify-center gap-1.5">
+                        ⬆️ ส่งข้อมูลขึ้น Google Sheets ตอนนี้
+                    </button>
+                    <button type="button" onclick="pullFromGoogleSheets(false)" id="btn-pull-from-sheets" class="flex-1 py-2.5 px-3.5 rounded-xl bg-white/15 hover:bg-white/25 text-white border border-white/25 font-bold text-xs transition flex items-center justify-center gap-1.5">
+                        ⬇️ ดึงข้อมูลจาก Google Sheets
                     </button>
                 </div>
             </div>
@@ -514,7 +523,7 @@
             </button>
             <button type="button" onclick="switchTab('data')" id="nav-data" class="nav-btn flex flex-col items-center justify-center gap-1 text-slate-400 font-medium">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582 4 8 4s8 1.79 8 4"></path>
                 </svg>
                 <span class="text-[11px]">นำเข้า/ส่งออก</span>
             </button>
@@ -745,21 +754,69 @@
         </div>
     </div>
 
-    <!-- ==================== MODAL 7: ห้องข้อมูล & วิธีนำขึ้น GitHub Pages ==================== -->
+    <!-- ==================== MODAL 7: ตั้งค่าเชื่อมต่อ Google Sheets & รหัสห้อง ==================== -->
     <div id="multi-device-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-        <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl animate-pop max-h-[92vh] overflow-y-auto">
+        <div class="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl animate-pop max-h-[92vh] overflow-y-auto">
             <div class="flex items-center justify-between">
-                <span class="text-xs font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-900">🚀 GitHub Pages & ห้องข้อมูล</span>
-                <button type="button" onclick="closeMultiDeviceModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center">✕</button>
+                <span class="text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-900">📊 เชื่อมต่อ Google Sheets</span>
+                <button type="button" onclick="closeSheetsModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center">✕</button>
             </div>
 
-            <h3 class="text-lg font-bold text-slate-900 mt-3">การจัดเก็บข้อมูล & การนำขึ้น GitHub</h3>
-            <p id="multi-device-conn-desc" class="text-xs text-slate-600 mt-1">
-                ไฟล์นี้ตั้งชื่อเป็น <code class="bg-slate-100 px-1.5 py-0.5 rounded font-bold">index.html</code> พร้อมอัปโหลดขึ้น GitHub Pages ได้ทันที โดยจะบันทึกข้อมูลในเครื่องอัตโนมัติ
+            <h3 class="text-lg font-bold text-slate-900 mt-3">เชื่อมต่อข้อมูลเข้า Google Sheets</h3>
+            <p class="text-xs text-slate-600 mt-1">
+                วางลิงก์ <strong>Google Apps Script Web App URL</strong> เพื่อส่งรายชื่อ หมายเหตุ และประวัติเช็กชื่อเข้า Google Sheets อัตโนมัติ และแชร์ข้อมูลร่วมกันหลายเครื่องได้
             </p>
 
+            <!-- ช่องกรอก Apps Script Web App URL -->
+            <div class="mt-4 p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-2.5">
+                <div class="flex items-center justify-between">
+                    <label for="sheets-webhook-input" class="text-xs font-bold text-emerald-950">🔗 Google Apps Script Web App URL</label>
+                    <button type="button" onclick="toggleScriptTemplateBox()" class="text-[11px] font-bold text-purple-700 hover:underline">
+                        📜 ดูโค้ด Apps Script
+                    </button>
+                </div>
+                <input type="url" id="sheets-webhook-input" placeholder="https://script.google.com/macros/s/AKfycb.../exec"
+                    class="w-full bg-white border border-emerald-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 outline-none focus:border-emerald-600">
+
+                <div class="flex items-center justify-between pt-1">
+                    <label class="inline-flex items-center gap-2 text-xs font-semibold text-emerald-950 cursor-pointer">
+                        <input type="checkbox" id="sheets-auto-sync-toggle" checked class="w-4 h-4 accent-emerald-600 rounded">
+                        <span>ซิงก์ขึ้น Google Sheets อัตโนมัติเมื่อมีการเช็กชื่อ/แก้ไข</span>
+                    </label>
+                </div>
+
+                <div class="flex flex-wrap gap-2 pt-1">
+                    <button type="button" onclick="saveSheetsConfig()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow transition">
+                        💾 บันทึกลิงก์
+                    </button>
+                    <button type="button" onclick="syncToGoogleSheets(false)" class="px-3.5 py-2 rounded-xl bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold shadow transition">
+                        ⬆️ ส่งข้อมูลขึ้นชีต
+                    </button>
+                    <button type="button" onclick="pullFromGoogleSheets(false)" class="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 text-xs font-bold transition">
+                        ⬇️ ดึงจากชีต
+                    </button>
+                </div>
+                <p id="sheets-last-sync-label" class="text-[11px] text-slate-500">สถานะ: ยังไม่ได้ซิงก์</p>
+            </div>
+
+            <!-- กล่องโค้ด Google Apps Script สำหรับคัดลอก -->
+            <div id="apps-script-template-box" class="hidden mt-3 p-3.5 rounded-2xl bg-slate-900 text-slate-100 space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-emerald-300">โค้ดสำหรับวางใน Extensions &gt; Apps Script</span>
+                    <button type="button" onclick="copyAppsScriptCode()" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold">
+                        📋 คัดลอกโค้ด
+                    </button>
+                </div>
+                <p class="text-[11px] text-slate-300 leading-relaxed">
+                    1. สร้างไฟล์ Google Sheet เปล่า → ไปที่ <strong>Extensions &gt; Apps Script</strong><br>
+                    2. วางโค้ดด้านล่างทับทั้งหมด → กด <strong>Deploy &gt; New deployment</strong> เลือก type เป็น <strong>Web app</strong> → ตั้ง <strong>Who has access: Anyone</strong> แล้วกด Deploy<br>
+                    3. นำ URL ที่ได้มาวางในช่องด้านบน
+                </p>
+                <pre id="apps-script-code-pre" class="text-[10px] bg-slate-950 p-2.5 rounded-xl overflow-x-auto text-emerald-200 max-h-44 leading-normal select-all"></pre>
+            </div>
+
             <!-- กล่องรหัสห้องข้อมูลทีมสีม่วง -->
-            <div class="mt-4 p-3.5 rounded-2xl bg-purple-50 border border-purple-200 space-y-2.5">
+            <div class="mt-3 p-3.5 rounded-2xl bg-purple-50 border border-purple-200 space-y-2">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-bold text-purple-950">🔑 รหัสห้องข้อมูลทีมสีม่วง (Room Code)</span>
                     <button type="button" onclick="copyCurrentRoomCode()" class="px-2.5 py-1 rounded-lg bg-purple-700 hover:bg-purple-800 text-white text-[11px] font-bold transition">
@@ -775,19 +832,8 @@
                 </div>
             </div>
 
-            <!-- ขั้นตอนสั้นๆ สำหรับเอาขึ้น GitHub Pages -->
-            <div class="mt-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5 text-xs text-slate-700">
-                <p class="font-bold text-purple-950">📌 วิธีเปิดเว็บบน GitHub Pages:</p>
-                <p>1. สร้าง Repository แบบ <strong>Public</strong> บน GitHub</p>
-                <p>2. อัปโหลดไฟล์ <strong>index.html</strong> แล้วกด Commit changes</p>
-                <p>3. ไปที่ <strong>Settings &gt; Pages</strong> → เลือก Branch <strong>main</strong> แล้วกด <strong>Save</strong></p>
-                <p class="text-[11px] text-slate-500 pt-1">
-                    * บน GitHub Pages ข้อมูลจะเก็บแยกตามเบราว์เซอร์ของแต่ละเครื่อง สามารถใช้ปุ่ม "บันทึกไฟล์สำรอง / นำเข้าไฟล์สำรอง" ในแท็บนำเข้า/ส่งออกเพื่อรวมยอดระหว่างเครื่องได้ครับ
-                </p>
-            </div>
-
             <div class="mt-5">
-                <button type="button" onclick="closeMultiDeviceModal()" class="w-full py-3 rounded-2xl bg-purple-700 hover:bg-purple-800 text-white font-bold text-sm shadow">
+                <button type="button" onclick="closeSheetsModal()" class="w-full py-3 rounded-2xl bg-purple-700 hover:bg-purple-800 text-white font-bold text-sm shadow">
                     เรียบร้อย
                 </button>
             </div>
@@ -800,12 +846,8 @@
     <!-- ==================== MAIN APPLICATION SCRIPT ==================== -->
     <script>
         /**
-         * ระบบเช็กชื่อนักกีฬาสีและฝ่ายต่างๆ - สีม่วง (เวอร์ชันพร้อมลง GitHub Pages)
-         * โครงสร้างหลัก:
-         * 1. หน้าต่างหลัก: กีฬา / เชียร์ / ผู้นำเชียร์ / สวัสดิการ / พาเหรด
-         * 2. หน้าต่างกีฬา: เลือกชนิดกีฬา -> ประเภทการแข่งขัน -> ตรวจสอบโควต้า/กติกา -> เช็กชื่อ
-         * 3. หน้าต่างฝ่ายอื่น: กดเข้าไปเจอรายชื่อน้องทันที -> เช็กชื่อรายคนหรือยกฝ่าย
-         * 4. บันทึกข้อมูลอัตโนมัติในเครื่อง (localStorage) แยกตามรหัสห้อง พร้อมรองรับนำเข้า/ส่งออกไฟล์สำรอง (.json) และ Excel/CSV
+         * ระบบเช็กชื่อนักกีฬาสีและฝ่ายต่างๆ - สีม่วง
+         * รวมเป็นไฟล์ index.html เดียว พร้อมบันทึกในเครื่อง + เชื่อมต่อ Google Sheets ผ่าน Apps Script Web App
          */
         const SPORTS_CONFIG = [
             {
@@ -1093,7 +1135,81 @@
             'สตาฟสี'
         ];
 
-        const STORAGE_PREFIX = 'PURPLE_SPORTS_GH_V1';
+        const STORAGE_PREFIX = 'PURPLE_SPORTS_SHEETS_V1';
+        const APPS_SCRIPT_CODE = `function doGet(e) {
+  try {
+    var room = (e && e.parameter && e.parameter.room) ? String(e.parameter.room).trim().toUpperCase() : 'PURPLE-MAIN';
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = getOrCreateRoomSheet(ss, room);
+    var jsonCell = sheet.getRange('A1').getValue();
+    var payload = jsonCell ? JSON.parse(jsonCell) : { schoolDB: [], purpleTeam: {}, attendanceLogs: [] };
+    return ContentService.createTextOutput(JSON.stringify({
+      ok: true,
+      roomCode: room,
+      data: payload
+    })).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ ok: false, error: err.message }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doPost(e) {
+  try {
+    var body = JSON.parse(e.postData.contents || '{}');
+    var room = String(body.roomCode || 'PURPLE-MAIN').trim().toUpperCase() || 'PURPLE-MAIN';
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = getOrCreateRoomSheet(ss, room);
+
+    sheet.getRange('A1').setValue(JSON.stringify({
+      schoolDB: body.schoolDB || [],
+      purpleTeam: body.purpleTeam || {},
+      attendanceLogs: body.attendanceLogs || [],
+      updatedAt: new Date().toISOString()
+    }));
+
+    writeReadableSummarySheet(ss, room, body.purpleTeam || {}, body.attendanceLogs || []);
+
+    return ContentService.createTextOutput(JSON.stringify({ ok: true, roomCode: room }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ ok: false, error: err.message }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function getOrCreateRoomSheet(ss, room) {
+  var name = ('STATE_' + room).slice(0, 95);
+  var sh = ss.getSheetByName(name);
+  if (!sh) sh = ss.insertSheet(name);
+  return sh;
+}
+
+function writeReadableSummarySheet(ss, room, purpleTeam, logs) {
+  var name = ('เช็กชื่อ_' + room).slice(0, 95);
+  var sh = ss.getSheetByName(name);
+  if (!sh) sh = ss.insertSheet(name);
+  sh.clearContents();
+
+  var members = Object.values(purpleTeam || {});
+  var rows = [['รหัสนักเรียน', 'ชื่อ-นามสกุล', 'ชั้น/ห้อง', 'ตำแหน่ง/ฝ่าย', 'หมายเหตุ', 'จำนวนวันที่มาเช็กชื่อ', 'วันที่มาล่าสุด']];
+
+  members.forEach(function(m) {
+    var mLogs = (logs || []).filter(function(l) { return String(l.studentId) === String(m.id); });
+    var uniqueDates = Array.from(new Set(mLogs.map(function(l) { return l.date; }))).sort();
+    rows.push([
+      m.id || '',
+      m.name || '',
+      m.cls || '',
+      m.role || '',
+      m.personalNote || '',
+      uniqueDates.length,
+      uniqueDates.length ? uniqueDates[uniqueDates.length - 1] : '-'
+    ]);
+  });
+
+  sh.getRange(1, 1, rows.length, rows[0].length).setValues(rows);
+}`;
 
         // ==================== STATE VARIABLES ====================
         let schoolDB = [];
@@ -1101,6 +1217,13 @@
         let attendanceLogs = [];
         let activeOfficer = null;
         let activeRoomCode = 'PURPLE-MAIN';
+
+        let sheetsConfig = {
+            webhookUrl: '',
+            autoSync: true,
+            lastSyncedAt: ''
+        };
+        let autoSyncTimer = null;
 
         let currentTab = 'sports';
         let portalMode = 'main'; // 'main' | 'sports_grid' | 'sport_detail' | 'dept_detail'
@@ -1119,13 +1242,158 @@
         let editingNoteStudentId = null;
         let editingNoteCatId = null;
 
-        // ==================== LOCAL PERSISTENCE (GITHUB PAGES READY) ====================
+        // ==================== LOCAL PERSISTENCE & GOOGLE SHEETS SYNC ====================
         function getRoomStorageKey(roomCode) {
             const cleanRoom = String(roomCode || 'PURPLE-MAIN').trim().toUpperCase() || 'PURPLE-MAIN';
             return `${STORAGE_PREFIX}_ROOM_${cleanRoom}`;
         }
 
-        function persistRoomState(roomCode = activeRoomCode) {
+        function loadSheetsConfig() {
+            try {
+                const raw = localStorage.getItem(`${STORAGE_PREFIX}_SHEETS_CFG`);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    sheetsConfig = {
+                        webhookUrl: String(parsed.webhookUrl || '').trim(),
+                        autoSync: parsed.autoSync !== false,
+                        lastSyncedAt: String(parsed.lastSyncedAt || '')
+                    };
+                }
+            } catch (e) {
+                console.warn('Sheets config load warning:', e);
+            }
+        }
+
+        function saveSheetsConfig() {
+            const urlInput = document.getElementById('sheets-webhook-input');
+            const autoToggle = document.getElementById('sheets-auto-sync-toggle');
+            sheetsConfig.webhookUrl = String(urlInput?.value || '').trim();
+            sheetsConfig.autoSync = Boolean(autoToggle?.checked);
+            try {
+                localStorage.setItem(`${STORAGE_PREFIX}_SHEETS_CFG`, JSON.stringify(sheetsConfig));
+            } catch (e) {
+                console.warn('Sheets config save warning:', e);
+            }
+            updateSheetsStatusUI();
+            if (sheetsConfig.webhookUrl) {
+                showToast('บันทึกการตั้งค่า Google Sheets เรียบร้อยแล้ว!', 'success');
+                pullFromGoogleSheets(true);
+            } else {
+                showToast('ล้างลิงก์ Google Sheets เรียบร้อยแล้ว', 'info');
+            }
+        }
+
+        function updateSheetsStatusUI() {
+            const hasUrl = Boolean(sheetsConfig.webhookUrl);
+            const headerBadge = document.getElementById('sheets-header-badge');
+            const pill = document.getElementById('data-sheets-status-pill');
+            const lastLabel = document.getElementById('sheets-last-sync-label');
+
+            if (headerBadge) {
+                headerBadge.textContent = hasUrl ? '🟢 เชื่อม Google Sheets' : '📊 Google Sheets: ยังไม่เชื่อม';
+            }
+            if (pill) {
+                pill.textContent = hasUrl
+                    ? (sheetsConfig.autoSync ? '🟢 เชื่อม Google Sheets (ซิงก์อัตโนมัติ)' : '🟢 เชื่อม Google Sheets (ซิงก์เอง)')
+                    : '📊 Google Sheets: ยังไม่ได้ตั้งค่า URL';
+            }
+            if (lastLabel) {
+                lastLabel.textContent = hasUrl
+                    ? (sheetsConfig.lastSyncedAt ? `ซิงก์ล่าสุดเมื่อ: ${sheetsConfig.lastSyncedAt}` : 'พร้อมเชื่อมต่อ Google Sheets')
+                    : 'สถานะ: ยังไม่ได้กรอก Web App URL';
+            }
+        }
+
+        function scheduleAutoSheetsSync() {
+            if (!sheetsConfig.webhookUrl || !sheetsConfig.autoSync) return;
+            if (autoSyncTimer) clearTimeout(autoSyncTimer);
+            autoSyncTimer = setTimeout(() => {
+                syncToGoogleSheets(true);
+            }, 600);
+        }
+
+        async function syncToGoogleSheets(silent = false) {
+            const url = String(sheetsConfig.webhookUrl || '').trim();
+            if (!url) {
+                if (!silent) {
+                    openSheetsModal();
+                    showToast('กรุณาวางลิงก์ Google Apps Script Web App URL ก่อนครับ', 'error');
+                }
+                return;
+            }
+
+            try {
+                if (!silent) showToast('กำลังส่งข้อมูลขึ้น Google Sheets...', 'info');
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({
+                        roomCode: activeRoomCode,
+                        schoolDB,
+                        purpleTeam,
+                        attendanceLogs
+                    })
+                });
+                const json = await res.json();
+                if (!json || json.ok === false) {
+                    throw new Error(json?.error || 'การตอบกลับจาก Google Sheets ไม่สำเร็จ');
+                }
+                sheetsConfig.lastSyncedAt = `${formatThaiDate(getTodayISO())} ${getCurrentTimeStr()} น.`;
+                localStorage.setItem(`${STORAGE_PREFIX}_SHEETS_CFG`, JSON.stringify(sheetsConfig));
+                updateSheetsStatusUI();
+                if (!silent) showToast('ส่งข้อมูลขึ้น Google Sheets เรียบร้อยแล้ว!', 'success');
+            } catch (err) {
+                console.warn('Sync to Google Sheets error:', err);
+                if (!silent) showToast('ส่งข้อมูลไม่สำเร็จ กรุณาตรวจสอบ URL และสิทธิ์การเข้าถึง Web App', 'error');
+            }
+        }
+
+        async function pullFromGoogleSheets(silent = false) {
+            const url = String(sheetsConfig.webhookUrl || '').trim();
+            if (!url) {
+                if (!silent) {
+                    openSheetsModal();
+                    showToast('กรุณาวางลิงก์ Google Apps Script Web App URL ก่อนครับ', 'error');
+                }
+                return;
+            }
+
+            try {
+                if (!silent) showToast('กำลังดึงข้อมูลจาก Google Sheets...', 'info');
+                const sep = url.includes('?') ? '&' : '?';
+                const targetUrl = `${url}${sep}room=${encodeURIComponent(activeRoomCode)}&t=${Date.now()}`;
+                const res = await fetch(targetUrl);
+                const json = await res.json();
+                if (!json || json.ok === false) {
+                    throw new Error(json?.error || 'ไม่สามารถดึงข้อมูลจาก Google Sheets ได้');
+                }
+                const d = json.data || {};
+                const hasRemoteData =
+                    (Array.isArray(d.schoolDB) && d.schoolDB.length > 0) ||
+                    (d.purpleTeam && Object.keys(d.purpleTeam).length > 0) ||
+                    (Array.isArray(d.attendanceLogs) && d.attendanceLogs.length > 0);
+
+                if (hasRemoteData) {
+                    schoolDB = Array.isArray(d.schoolDB) ? d.schoolDB : schoolDB;
+                    purpleTeam = (d.purpleTeam && typeof d.purpleTeam === 'object') ? d.purpleTeam : purpleTeam;
+                    attendanceLogs = Array.isArray(d.attendanceLogs) ? d.attendanceLogs : attendanceLogs;
+                    persistRoomState();
+                    refreshAllViews();
+                }
+
+                sheetsConfig.lastSyncedAt = `${formatThaiDate(getTodayISO())} ${getCurrentTimeStr()} น.`;
+                localStorage.setItem(`${STORAGE_PREFIX}_SHEETS_CFG`, JSON.stringify(sheetsConfig));
+                updateSheetsStatusUI();
+                if (!silent) {
+                    showToast(hasRemoteData ? 'ดึงข้อมูลจาก Google Sheets เรียบร้อยแล้ว!' : 'เชื่อมต่อชีตสำเร็จ (ยังไม่มีข้อมูลในชีตนี้)', 'success');
+                }
+            } catch (err) {
+                console.warn('Pull from Google Sheets error:', err);
+                if (!silent) showToast('ดึงข้อมูลจาก Google Sheets ไม่สำเร็จ กรุณาตรวจสอบ URL', 'error');
+            }
+        }
+
+        function persistRoomState(roomCode = activeRoomCode, triggerSheets = true) {
             try {
                 const cleanRoom = String(roomCode || 'PURPLE-MAIN').trim().toUpperCase() || 'PURPLE-MAIN';
                 localStorage.setItem(`${STORAGE_PREFIX}_LAST_ROOM`, cleanRoom);
@@ -1141,6 +1409,9 @@
                 localStorage.setItem(getRoomStorageKey(cleanRoom), JSON.stringify(payload));
             } catch (err) {
                 console.warn('Local storage write warning:', err);
+            }
+            if (triggerSheets) {
+                scheduleAutoSheetsSync();
             }
         }
 
@@ -1171,12 +1442,13 @@
             }
         }
 
-        function initLocalStorageMode() {
+        function initStorageMode() {
+            loadSheetsConfig();
             const lastRoom = localStorage.getItem(`${STORAGE_PREFIX}_LAST_ROOM`) || 'PURPLE-MAIN';
             loadRoomState(lastRoom);
-            const badge = document.getElementById('cloud-sync-badge');
-            if (badge) badge.textContent = `💾 บันทึกในเครื่อง (${activeRoomCode})`;
-            updateMultiDeviceStatusUI(activeRoomCode);
+            const roomLabel = document.getElementById('data-room-code-label');
+            if (roomLabel) roomLabel.textContent = activeRoomCode;
+            updateSheetsStatusUI();
         }
 
         // ==================== UTILITY & DATE HELPERS ====================
@@ -1332,307 +1604,4 @@
                         note: item.note
                     });
                 }
-                purpleTeam[st.id] = {
-                    id: String(st.id),
-                    name: st.name,
-                    grade: st.grade || extractGrade(st.cls),
-                    cls: st.cls || '-',
-                    role: existing?.role || item.role || 'นักกีฬา',
-                    personalNote: item.personalNote || existing?.personalNote || '',
-                    enrollments,
-                    registeredAt: existing?.registeredAt || new Date().toISOString()
-                };
-            });
-
-            const sampleCheckIns = [
-                { id: '67101', sportId: 'athletics', catId: 'ath_100_14_m', date: d1 },
-                { id: '67115', sportId: 'athletics', catId: 'ath_100_14_f', date: d1 },
-                { id: '67101', sportId: 'football', catId: 'fb_jr_m', date: d1 },
-                { id: '67101', sportId: 'football', catId: 'fb_jr_m', date: d2 },
-                { id: '62615', sportId: 'welfare', catId: 'dept_welfare', date: d1 }
-            ];
-            sampleCheckIns.forEach(sc => {
-                const mem = purpleTeam[sc.id];
-                if (!mem) return;
-                if (!attendanceLogs.some(l => l.date === sc.date && l.catId === sc.catId && String(l.studentId) === sc.id)) {
-                    attendanceLogs.push({
-                        date: sc.date,
-                        sportId: sc.sportId,
-                        catId: sc.catId,
-                        studentId: sc.id,
-                        studentName: mem.name,
-                        cls: mem.cls,
-                        timeStr: '16:15',
-                        checkedBy: 'ตัวอย่างระบบ',
-                        timestamp: new Date().toISOString()
-                    });
-                }
-            });
-
-            persistRoomState();
-            refreshAllViews();
-            showToast('โหลดข้อมูลตัวอย่างและบันทึกลงเครื่องเรียบร้อยแล้ว!', 'success');
-        }
-
-        // ==================== NAVIGATION & LOOKUP HELPERS ====================
-        function switchTab(tabName) {
-            currentTab = tabName;
-            const tabs = ['sports', 'dashboard', 'roster', 'data'];
-            tabs.forEach(t => {
-                const sec = document.getElementById(`tab-${t}`);
-                const btn = document.getElementById(`nav-${t}`);
-                if (sec) sec.classList.toggle('hidden', t !== tabName);
-                if (btn) {
-                    if (t === tabName) {
-                        btn.classList.remove('text-slate-400', 'font-medium');
-                        btn.classList.add('text-purple-700', 'font-bold');
-                    } else {
-                        btn.classList.add('text-slate-400', 'font-medium');
-                        btn.classList.remove('text-purple-700', 'font-bold');
-                    }
-                }
-            });
-            refreshAllViews();
-        }
-
-        function openMainPortal() {
-            portalMode = 'main';
-            activeSportId = null;
-            activeCategoryId = null;
-            activeDeptId = null;
-            renderCurrentPortalView();
-        }
-
-        function getSportById(sportId) {
-            return SPORTS_CONFIG.find(s => s.id === sportId) || null;
-        }
-
-        function getCategoryById(sportId, catId) {
-            const sp = getSportById(sportId);
-            if (!sp) return null;
-            return sp.categories.find(c => c.id === catId) || null;
-        }
-
-        function getDeptById(deptId) {
-            return DEPARTMENTS_CONFIG.find(d => d.id === deptId) || null;
-        }
-
-        function getAthleticsSlotInfo(catId, idx) {
-            const id = String(catId || '');
-            if (id.startsWith('ath_100_')) {
-                if (idx === 0) return { label: '⭐ ตัวจริง', shortLabel: 'ตัวจริง', badgeClass: 'bg-emerald-100 text-emerald-800' };
-                if (idx === 1) return { label: '🔄 สำรอง', shortLabel: 'สำรอง', badgeClass: 'bg-amber-100 text-amber-900' };
-                return { label: '⚠️ เกินโควต้า', shortLabel: 'เกินโควต้า', badgeClass: 'bg-rose-100 text-rose-800' };
-            }
-            if (id.startsWith('ath_4x100_')) {
-                if (idx >= 0 && idx <= 3) return { label: `⭐ ตัวจริง (ไม้ ${idx + 1})`, shortLabel: `ตัวจริง ไม้${idx + 1}`, badgeClass: 'bg-emerald-100 text-emerald-800' };
-                if (idx === 4) return { label: '🔄 สำรอง', shortLabel: 'สำรอง', badgeClass: 'bg-amber-100 text-amber-900' };
-                return { label: '⚠️ เกินโควต้า', shortLabel: 'เกินโควต้า', badgeClass: 'bg-rose-100 text-rose-800' };
-            }
-            return null;
-        }
-
-        function getAthletesInCategory(sportId, catId) {
-            const list = [];
-            Object.values(purpleTeam).forEach(m => {
-                const enr = (m.enrollments || []).find(e => e.catId === catId && (!sportId || e.sportId === sportId));
-                if (enr) {
-                    list.push({
-                        ...m,
-                        slotOrder: typeof enr.slotOrder === 'number' ? enr.slotOrder : Number.MAX_SAFE_INTEGER,
-                        enrollmentNote: enr.note || '',
-                        displayNote: getMemberDisplayNote(m, catId)
-                    });
-                }
-            });
-            return list.sort((a, b) =>
-                (a.slotOrder - b.slotOrder) ||
-                String(a.cls || '').localeCompare(String(b.cls || ''), 'th', { numeric: true }) ||
-                String(a.id || '').localeCompare(String(b.id || ''), undefined, { numeric: true })
-            );
-        }
-
-        function moveAthleteSlot(studentId, catId, delta) {
-            const list = getAthletesInCategory('athletics', catId);
-            const idx = list.findIndex(m => String(m.id) === String(studentId));
-            const targetIdx = idx + delta;
-            if (idx === -1 || targetIdx < 0 || targetIdx >= list.length) return;
-
-            list.forEach((item, i) => {
-                const member = purpleTeam[String(item.id)];
-                if (!member || !Array.isArray(member.enrollments)) return;
-                const enr = member.enrollments.find(e => e.catId === catId);
-                if (enr) enr.slotOrder = i + 1;
-            });
-
-            const memberA = purpleTeam[String(list[idx].id)];
-            const memberB = purpleTeam[String(list[targetIdx].id)];
-            const enrA = memberA?.enrollments?.find(e => e.catId === catId);
-            const enrB = memberB?.enrollments?.find(e => e.catId === catId);
-
-            if (enrA && enrB) {
-                const tmp = enrA.slotOrder;
-                enrA.slotOrder = enrB.slotOrder;
-                enrB.slotOrder = tmp;
-                persistRoomState();
-                refreshAllViews();
-                showToast('สลับลำดับตัวจริง/สำรองเรียบร้อยแล้ว', 'success');
-            }
-        }
-
-        function getMembersInDept(deptId) {
-            const dept = getDeptById(deptId);
-            if (!dept) return [];
-            const list = [];
-            Object.values(purpleTeam).forEach(m => {
-                const enr = (m.enrollments || []).find(e => e.catId === dept.catId || e.sportId === dept.id);
-                if (enr) {
-                    list.push({
-                        ...m,
-                        enrollmentNote: enr.note || '',
-                        displayNote: getMemberDisplayNote(m, dept.catId)
-                    });
-                }
-            });
-            return list.sort((a, b) =>
-                String(a.cls || '').localeCompare(String(b.cls || ''), 'th', { numeric: true }) ||
-                String(a.id || '').localeCompare(String(b.id || ''), undefined, { numeric: true })
-            );
-        }
-
-        function getMemberDisplayNote(member, catId = null) {
-            if (!member) return '';
-            const pNote = String(member.personalNote || '').trim();
-            const enr = catId
-                ? (member.enrollments || []).find(e => e.catId === catId)
-                : null;
-            const eNote = String(enr?.note || '').trim();
-
-            if (pNote && eNote && pNote !== eNote && !pNote.includes(eNote) && !eNote.includes(pNote)) {
-                return `${pNote} • ${eNote}`;
-            }
-            return pNote || eNote || '';
-        }
-
-        function getOfficerDisplayText() {
-            if (!activeOfficer) return '';
-            return activeOfficer.name
-                ? `${activeOfficer.role} (${activeOfficer.name})`
-                : activeOfficer.role;
-        }
-
-        function extractGrade(raw) {
-            const s = String(raw || '').trim();
-            const m = s.match(/ม\.?\s*([1-6])/);
-            if (m) return `ม.${m[1]}`;
-            const num = s.match(/^([1-6])\s*\//);
-            if (num) return `ม.${num[1]}`;
-            return '';
-        }
-
-        function normalizeClassLabel(gradeRaw, roomRaw) {
-            const gStr = String(gradeRaw || '').trim();
-            const rStr = String(roomRaw || '').trim().replace(/^\/+/, '');
-            const fullMatch = gStr.match(/ม\.?\s*([1-6])\s*[\/\-]\s*(\d+)/) || gStr.match(/^([1-6])\s*[\/\-]\s*(\d+)$/);
-            if (fullMatch) {
-                return `ม.${fullMatch[1]}/${fullMatch[2]}`;
-            }
-            const g = extractGrade(gStr);
-            if (g && rStr) return `${g}/${rStr}`;
-            if (g) return g;
-            return gStr || rStr || '-';
-        }
-
-        function isJuniorHigh(gradeOrClass) {
-            const g = extractGrade(gradeOrClass);
-            return g === 'ม.1' || g === 'ม.2' || g === 'ม.3';
-        }
-
-        function isSeniorHigh(gradeOrClass) {
-            const g = extractGrade(gradeOrClass);
-            return g === 'ม.4' || g === 'ม.5' || g === 'ม.6';
-        }
-
-        function isMaleStudent(name) {
-            const n = String(name || '').trim();
-            return /^(เด็กชาย|ด\.ช\.|นาย)/.test(n);
-        }
-
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toast-container');
-            if (!container) return;
-            const toast = document.createElement('div');
-            const bgClass = type === 'success'
-                ? 'bg-emerald-700 text-white border-emerald-500'
-                : type === 'error'
-                    ? 'bg-rose-700 text-white border-rose-500'
-                    : 'bg-purple-900 text-white border-purple-700';
-
-            toast.className = `pointer-events-auto px-4 py-2.5 rounded-2xl shadow-xl border text-xs sm:text-sm font-bold animate-pop ${bgClass}`;
-            toast.textContent = message;
-            container.innerHTML = '';
-            container.appendChild(toast);
-
-            setTimeout(() => {
-                if (toast.parentNode === container) {
-                    toast.remove();
-                }
-            }, 2800);
-        }
-
-        function copyTextFallback(text, successMsg) {
-            const ta = document.createElement('textarea');
-            ta.value = text;
-            ta.style.position = 'fixed';
-            ta.style.opacity = '0';
-            document.body.appendChild(ta);
-            ta.select();
-            try {
-                document.execCommand('copy');
-                showToast(successMsg || 'คัดลอกเรียบร้อยแล้ว!', 'success');
-            } catch (e) {
-                showToast('ไม่สามารถคัดลอกอัตโนมัติได้ กรุณาคัดลอกด้วยตนเอง', 'error');
-            }
-            document.body.removeChild(ta);
-        }
-
-        function updateMultiDeviceStatusUI(roomCode = activeRoomCode) {
-            const pill = document.getElementById('data-sync-status-pill');
-            const roomLabel = document.getElementById('data-room-code-label');
-            const badge = document.getElementById('cloud-sync-badge');
-
-            if (roomLabel) roomLabel.textContent = roomCode;
-            if (pill) pill.textContent = '💾 บันทึกในเครื่องอัตโนมัติ (GitHub Ready)';
-            if (badge) badge.textContent = `💾 บันทึกในเครื่อง (${roomCode})`;
-        }
-
-        function openMultiDeviceModal() {
-            const input = document.getElementById('room-code-input');
-            if (input) input.value = activeRoomCode;
-            updateMultiDeviceStatusUI(activeRoomCode);
-            document.getElementById('multi-device-modal').classList.remove('hidden');
-        }
-
-        function closeMultiDeviceModal() {
-            document.getElementById('multi-device-modal').classList.add('hidden');
-        }
-
-        function copyCurrentRoomCode() {
-            copyTextFallback(activeRoomCode, `คัดลอกรหัสห้อง "${activeRoomCode}" เรียบร้อยแล้ว!`);
-        }
-
-        function applyRoomCodeChange() {
-            const input = document.getElementById('room-code-input');
-            const cleaned = String(input?.value || '')
-                .trim()
-                .toUpperCase()
-                .replace(/[^A-Z0-9_-]/g, '');
-            const nextRoom = cleaned || 'PURPLE-MAIN';
-            if (input) input.value = nextRoom;
-
-            persistRoomState(activeRoomCode);
-            loadRoomState(nextRoom);
-            updateMultiDeviceStatusUI(activeRoomCode);
-            refreshAllViews();
-            closeMultiDeviceModal();
-            showToast(`สลับไปยังห้องข้อมูล "${activeRoomCode}" เรียบร้อยแล้ว!`,
+                purpleTeam[s
